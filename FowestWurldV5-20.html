@@ -538,6 +538,25 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .footer-logo-img{width:34px;height:34px;border-radius:50%;object-fit:cover;}
 .footer-wordmark{font-size:15px;letter-spacing:.16em;font-weight:700;}
 .footer-tagline{font-size:13.5px;color:var(--fg-mute);font-style:italic;}
+.footer-subscribe{margin-top:26px;max-width:340px;}
+.footer-subscribe-label{font-size:10.5px;letter-spacing:.2em;color:var(--fg-faint);margin-bottom:12px;}
+.footer-subscribe-row{display:flex;border-bottom:1px solid var(--border-lite);transition:border-color .25s ease;}
+.footer-subscribe-row:focus-within{border-color:var(--yellow);}
+.footer-subscribe-row input{
+  flex:1;background:transparent;border:none;color:var(--fg);font-size:13px;padding:10px 0;
+  font-family:inherit;min-width:0;
+}
+.footer-subscribe-row input::placeholder{color:var(--fg-faint);}
+.footer-subscribe-row input:focus{outline:none;}
+.footer-subscribe-row button{
+  flex-shrink:0;font-size:11px;letter-spacing:.14em;color:var(--fg-dim);padding:10px 4px 10px 12px;
+  transition:color .25s ease;
+}
+.footer-subscribe-row button:hover{color:var(--yellow);}
+.footer-subscribe-row button:disabled{opacity:.4;pointer-events:none;}
+.footer-subscribe-msg{font-size:11px;color:var(--fg-faint);margin-top:10px;min-height:14px;}
+.footer-subscribe-msg.success{color:#7fbf8f;}
+.footer-subscribe-msg.error{color:#c8322a;}
 .footer-contact{font-size:12.5px;color:var(--fg-faint);margin-top:14px;}
 .footer-socials{display:flex;align-items:center;gap:14px;margin-top:22px;}
 .footer-social-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-lite);color:var(--fg-dim);transition:border-color .3s ease,color .3s ease;}
@@ -640,6 +659,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .co-summary-row.total{border-top:1px solid var(--border);margin-top:8px;padding-top:14px;font-size:15px;color:var(--fg);font-weight:600;}
 .co-summary-row.total span:last-child{color:var(--yellow);}
 .co-item-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--fg-mute);padding:4px 0;}
+.co-item-row.with-img{align-items:center;padding:8px 0;}
+.co-item-row-left{display:flex;align-items:center;gap:10px;min-width:0;}
+.co-item-row-left img{width:40px;height:50px;object-fit:cover;flex-shrink:0;background:var(--bg-alt);}
+.co-item-row-left span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
 /* confirmation */
 .conf-icon{width:64px;height:64px;border-radius:50%;background:#3c8452;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
@@ -701,7 +724,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://js.paystack.co/v1/inline.js"></script>
 </head>
 <body>
 
@@ -926,6 +948,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20l1.4-4.2A8 8 0 1 1 9 18.5L4 20z"/><path d="M8.5 9.5c0 3 2.5 5.5 5.5 5.5" stroke-linecap="round"/></svg>
           </a>
         </div>
+        <div class="footer-subscribe">
+          <p class="footer-subscribe-label">GET NOTIFIED ABOUT NEW DROPS</p>
+          <form id="subscribeForm">
+            <div class="footer-subscribe-row">
+              <input type="email" id="subscribeEmail" placeholder="YOUR EMAIL" required />
+              <button type="submit" id="subscribeBtn">SUBSCRIBE →</button>
+            </div>
+          </form>
+          <p class="footer-subscribe-msg" id="subscribeMsg"></p>
+        </div>
       </div>
       <div>
         <p class="footer-col-label">NAVIGATE</p>
@@ -1062,15 +1094,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
         </div>
         <div class="pm-details" id="pmBankDetails"></div>
       </div>
-      <div class="pm-option" id="pmOnlineOption" data-method="online">
-        <div class="pm-option-head">
-          <span class="pm-radio"></span>
-          <div>
-            <p class="pm-option-title">PAY ONLINE</p>
-            <p class="pm-option-sub">Card, bank transfer, or USSD via Paystack</p>
-          </div>
-        </div>
-      </div>
 
       <p class="fw-subhead">ORDER SUMMARY</p>
       <div id="coItemsList"></div>
@@ -1146,6 +1169,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="products">PRODUCTS</button>
         <button class="admin-tab" data-tab="orders">ORDERS</button>
+        <button class="admin-tab" data-tab="subscribers">SUBSCRIBERS</button>
         <button class="admin-tab" data-tab="settings">SETTINGS</button>
       </div>
 
@@ -1160,6 +1184,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <!-- ORDERS TAB -->
       <div class="admin-section" id="adminTabOrders">
         <div id="adminOrderList"></div>
+      </div>
+
+      <!-- SUBSCRIBERS TAB -->
+      <div class="admin-section" id="adminTabSubscribers">
+        <div id="adminSubscriberList"></div>
       </div>
 
       <!-- SETTINGS TAB -->
@@ -1183,7 +1212,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
           <p class="fw-field-hint" style="margin-bottom:18px;">This fee applies to all orders unless a state-specific fee is set below.</p>
           <div id="stateFeeList"></div>
 
-          <button type="submit" class="fw-btn-primary" style="margin-top:20px;">SAVE SETTINGS</button>
+          <button type="submit" class="fw-btn-primary" id="adminSettingsSaveBtn" style="margin-top:20px;">SAVE SETTINGS</button>
         </form>
 
         <p class="fw-subhead">SECURITY</p>
@@ -1275,12 +1304,6 @@ const SUPABASE_URL = "https://zmswpnhsvpjddwlvoyts.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Wmnggx29dGJWD5UVzfcv5g_EQQIzURV";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ============ PAYSTACK ============
-// Public key only — this is safe to expose in frontend code.
-// Swap to your sk_live_... counterpart's PUBLIC key (pk_live_...) when going live.
-// The SECRET key lives only in Netlify env vars, used by netlify/functions/verify-payment.js
-const PAYSTACK_PUBLIC_KEY = "pk_test_REPLACE_WITH_YOUR_PUBLIC_KEY";
-
 const IMG = {
   accessoryWatch: "https://images.unsplash.com/photo-1758887952896-8491d393afe2?fm=jpg&q=60&w=1200&auto=format&fit=crop",
   accessoryNecklace: "https://images.unsplash.com/photo-1605201206717-cb9eca0d2eb2?fm=jpg&q=60&w=1200&auto=format&fit=crop",
@@ -1324,9 +1347,9 @@ const DEFAULT_SETTINGS = {
   phone: "+234 808 507 5909",
   email: "fowestwurld@gmail.com",
   whatsapp: "2348085075909",
-  bankName: "",
-  accountName: "",
-  accountNumber: "",
+  bankName: "Moniepoint MFB",
+  accountName: "Fawas Oluwaseun Seriki",
+  accountNumber: "8085075909",
   deliveryFee: 3000,
   stateFees: {},
   adminPassword: "fowest2026"
@@ -1429,13 +1452,128 @@ async function uploadProductImage(file) {
   return data.publicUrl;
 }
 
-function loadSettings() {
+// ============ SUBSCRIBERS ============
+async function insertSubscriber(email) {
+  const { error } = await sb.from("subscribers").insert([{ email }]);
+  if (error) {
+    // Postgres unique_violation — they're already subscribed. Not a real error for our purposes.
+    if (error.code === "23505") return { ok: true, alreadySubscribed: true };
+    console.error("Supabase insertSubscriber failed:", error);
+    return { ok: false };
+  }
+  return { ok: true, alreadySubscribed: false };
+}
+
+async function loadSubscribers() {
+  try {
+    const { data, error } = await sb.from("subscribers").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  } catch (e) {
+    console.error("Supabase loadSubscribers failed:", e);
+    return null;
+  }
+}
+
+function initSubscribeForm() {
+  const form = document.getElementById("subscribeForm");
+  const emailInput = document.getElementById("subscribeEmail");
+  const btn = document.getElementById("subscribeBtn");
+  const msg = document.getElementById("subscribeMsg");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if (!email) return;
+
+    btn.disabled = true;
+    btn.textContent = "...";
+    msg.textContent = "";
+    msg.className = "footer-subscribe-msg";
+
+    const result = await insertSubscriber(email);
+
+    btn.disabled = false;
+    btn.textContent = "SUBSCRIBE →";
+
+    if (result.ok) {
+      emailInput.value = "";
+      msg.textContent = result.alreadySubscribed ? "You're already on the list." : "You're on the list. Watch your inbox.";
+      msg.classList.add("success");
+    } else {
+      msg.textContent = "Something went wrong. Please try again.";
+      msg.classList.add("error");
+    }
+  });
+}
+
+function loadSettingsCache() {
   try {
     const raw = localStorage.getItem(LS_SETTINGS);
     if (raw) return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(raw));
   } catch (e) {}
   return Object.assign({}, DEFAULT_SETTINGS);
 }
+function cacheSettings(s) {
+  try { localStorage.setItem(LS_SETTINGS, JSON.stringify(s)); } catch (e) {}
+}
+
+// The admin password intentionally stays local-only — the settings row in
+// Supabase is readable via the site's public key (same trust model as
+// products), so a password stored there would be readable by anyone.
+function settingsRowToObj(row) {
+  return {
+    storeName: row.store_name,
+    phone: row.phone,
+    email: row.email,
+    whatsapp: row.whatsapp,
+    bankName: row.bank_name,
+    accountName: row.account_name,
+    accountNumber: row.account_number,
+    deliveryFee: row.delivery_fee,
+    stateFees: row.state_fees || {},
+  };
+}
+function settingsObjToRow(s) {
+  return {
+    id: 1,
+    store_name: s.storeName,
+    phone: s.phone,
+    email: s.email,
+    whatsapp: s.whatsapp,
+    bank_name: s.bankName,
+    account_name: s.accountName,
+    account_number: s.accountNumber,
+    delivery_fee: s.deliveryFee,
+    state_fees: s.stateFees || {},
+  };
+}
+
+async function loadSettingsFromSupabase() {
+  try {
+    const { data, error } = await sb.from("store_settings").select("*").eq("id", 1).maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    return settingsRowToObj(data);
+  } catch (e) {
+    console.error("Supabase loadSettings failed, using local cache:", e);
+    return null;
+  }
+}
+
+async function saveSettingsToSupabase(s) {
+  try {
+    const { error } = await sb.from("store_settings").upsert([settingsObjToRow(s)]);
+    if (error) throw error;
+    return true;
+  } catch (e) {
+    console.error("Supabase saveSettings failed:", e);
+    return false;
+  }
+}
+
+// Local-only: admin password lives in localStorage, never in Supabase.
 function saveSettings(s) {
   try { localStorage.setItem(LS_SETTINGS, JSON.stringify(s)); } catch (e) {}
 }
@@ -1461,7 +1599,7 @@ function nextOrderNumber() {
 }
 
 let PRODUCTS = loadProductsCache(); // instant paint from cache/seed
-let SETTINGS = loadSettings();
+let SETTINGS = loadSettingsCache(); // instant paint from cache/default
 let ORDERS = loadOrders();
 let WHATSAPP_NUMBER = SETTINGS.whatsapp || "2348085075909";
 
@@ -2425,7 +2563,7 @@ function finalizeOrder(formValues, paymentMethod, paymentStatus, paystackRef) {
     city,
     address,
     instructions,
-    items: cart.map((c) => ({ name: c.name, size: c.size, qty: c.qty, price: c.price })),
+    items: cart.map((c) => ({ id: c.id, name: c.name, img: c.img, size: c.size, qty: c.qty, price: c.price })),
     subtotal,
     deliveryFee: fee,
     total,
@@ -2476,84 +2614,7 @@ function setCheckoutSubmitting(isSubmitting, label) {
 function submitOrder() {
   const formValues = readCheckoutForm();
   if (!validateCheckoutForm(formValues)) return;
-
-  if (checkoutPaymentMethod === "bank") {
-    finalizeOrder(formValues, "BANK TRANSFER", "PENDING", null);
-    return;
-  }
-
-  if (checkoutPaymentMethod === "online") {
-    payWithPaystack(formValues);
-    return;
-  }
-}
-
-function payWithPaystack(formValues) {
-  if (!window.PaystackPop) {
-    showToast("Payment service failed to load. Please refresh and try again.");
-    return;
-  }
-  if (!PAYSTACK_PUBLIC_KEY || PAYSTACK_PUBLIC_KEY.indexOf("REPLACE_WITH") !== -1) {
-    showToast("Online payment is not configured yet. Please choose bank transfer.");
-    return;
-  }
-
-  const fee = deliveryFeeForState(formValues.state);
-  const subtotal = cartTotal();
-  const total = subtotal + fee;
-  const amountInKobo = Math.round(total * 100);
-
-  setCheckoutSubmitting(true, "OPENING PAYMENT...");
-
-  const handler = window.PaystackPop.setup({
-    key: PAYSTACK_PUBLIC_KEY,
-    email: formValues.email,
-    amount: amountInKobo,
-    currency: "NGN",
-    ref: `FW_${Date.now()}_${Math.floor(Math.random() * 100000)}`,
-    metadata: {
-      custom_fields: [
-        { display_name: "Customer Name", variable_name: "customer_name", value: formValues.name },
-        { display_name: "Phone", variable_name: "phone", value: formValues.phone }
-      ]
-    },
-    callback: function (response) {
-      // Runs after Paystack reports success client-side. We still must verify
-      // server-side before trusting it — a browser-only "success" can be faked.
-      setCheckoutSubmitting(true, "VERIFYING PAYMENT...");
-      verifyPaystackPayment(response.reference, amountInKobo)
-        .then((result) => {
-          if (result.success) {
-            finalizeOrder(formValues, "ONLINE PAYMENT", "PAID", result.reference);
-          } else {
-            showToast(result.message || "Payment could not be verified. Please contact support with your reference: " + response.reference);
-          }
-        })
-        .catch((err) => {
-          console.error("Verification error:", err);
-          showToast("We couldn't confirm your payment automatically. Please contact us with your reference: " + response.reference);
-        })
-        .finally(() => setCheckoutSubmitting(false));
-    },
-    onClose: function () {
-      setCheckoutSubmitting(false);
-      showToast("Payment cancelled");
-    }
-  });
-
-  handler.openIframe();
-}
-
-async function verifyPaystackPayment(reference, expectedAmount) {
-  const res = await fetch("/.netlify/functions/verify-payment", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ reference, expectedAmount })
-  });
-  if (!res.ok) {
-    throw new Error("Verify request failed with status " + res.status);
-  }
-  return res.json();
+  finalizeOrder(formValues, "BANK TRANSFER", "PENDING", null);
 }
 
 function showOrderConfirmation(order) {
@@ -2685,6 +2746,7 @@ function initAdmin() {
       ).classList.add("active");
       if (tab.dataset.tab === "products") renderAdminProducts();
       if (tab.dataset.tab === "orders") renderAdminOrders();
+      if (tab.dataset.tab === "subscribers") renderAdminSubscribers();
       if (tab.dataset.tab === "settings") fillSettingsForm();
     });
   });
@@ -2931,6 +2993,58 @@ function renderAdminOrders() {
   });
 }
 
+let SUBSCRIBERS_CACHE = null;
+
+async function renderAdminSubscribers() {
+  const list = document.getElementById("adminSubscriberList");
+  list.innerHTML = `<div class="admin-empty">Loading...</div>`;
+
+  const data = await loadSubscribers();
+  SUBSCRIBERS_CACHE = data;
+
+  if (data === null) {
+    list.innerHTML = `<div class="admin-empty">Couldn't load subscribers. Check your connection and try again.</div>`;
+    return;
+  }
+  if (data.length === 0) {
+    list.innerHTML = `<div class="admin-empty">No subscribers yet.</div>`;
+    return;
+  }
+
+  const rows = data.map((s) => `
+    <div class="admin-order-card" style="cursor:default;">
+      <div class="admin-order-top">
+        <span class="admin-order-num">${s.email}</span>
+        <span class="admin-order-date">${new Date(s.created_at).toLocaleDateString("en-NG", { day: "2-digit", month: "short", year: "numeric" })}</span>
+      </div>
+    </div>`
+  ).join("");
+
+  list.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span class="fw-field-hint" style="margin:0;">${data.length} subscriber${data.length === 1 ? "" : "s"}</span>
+      <button class="fw-btn-secondary" id="exportSubscribersBtn" style="width:auto;padding:8px 16px;font-size:10.5px;">EXPORT CSV</button>
+    </div>
+    ${rows}`;
+
+  document.getElementById("exportSubscribersBtn").addEventListener("click", () => exportSubscribersCsv(data));
+}
+
+function exportSubscribersCsv(data) {
+  const header = "email,subscribed_at\n";
+  const rows = data.map((s) => `${s.email},${s.created_at}`).join("\n");
+  const csv = header + rows;
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `fowest-wurld-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function initOrderDetail() {
   document.getElementById("orderDetailCloseBtn").addEventListener("click", () => closePanel("orderDetailOverlay", "orderDetailPanel"));
   document.getElementById("orderDetailOverlay").addEventListener("click", () => closePanel("orderDetailOverlay", "orderDetailPanel"));
@@ -2941,7 +3055,7 @@ function openOrderDetail(orderNumber) {
   if (!order) return;
 
   const itemsHtml = order.items.map(
-    (it) => `<div class="co-item-row"><span>${it.name} (${it.size}) x${it.qty}</span><span>${formatNaira(it.price * it.qty)}</span></div>`
+    (it) => `<div class="co-item-row with-img"><div class="co-item-row-left">${it.img ? `<img src="${it.img}" alt="${it.name}" />` : ""}<span>${it.name} (${it.size}) x${it.qty}</span></div><span>${formatNaira(it.price * it.qty)}</span></div>`
   ).join("");
 
   const body = document.getElementById("orderDetailBody");
@@ -3014,7 +3128,7 @@ function fillSettingsForm() {
     ).join("");
 }
 
-function saveSettingsFromForm() {
+async function saveSettingsFromForm() {
   SETTINGS.storeName = document.getElementById("setStoreName").value.trim() || "Fowest Wurld";
   SETTINGS.phone = document.getElementById("setPhone").value.trim();
   SETTINGS.email = document.getElementById("setEmail").value.trim();
@@ -3030,10 +3144,22 @@ function saveSettingsFromForm() {
   });
   SETTINGS.stateFees = stateFees;
 
-  saveSettings(SETTINGS);
+  const btn = document.getElementById("adminSettingsSaveBtn");
+  if (btn) { btn.disabled = true; btn.textContent = "SAVING..."; }
+
+  cacheSettings(SETTINGS); // instant local cache so this device reflects it right away
+  const ok = await saveSettingsToSupabase(SETTINGS);
+
+  if (btn) { btn.disabled = false; btn.textContent = "SAVE SETTINGS"; }
+
   WHATSAPP_NUMBER = SETTINGS.whatsapp || WHATSAPP_NUMBER;
   applySettingsToStorefront();
-  showToast("Settings saved");
+
+  if (ok) {
+    showToast("Settings saved — visible to all visitors");
+  } else {
+    showToast("Saved on this device only — check your connection and try again");
+  }
 }
 
 function changeAdminPassword() {
@@ -3109,6 +3235,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCheckout();
   initConfirmation();
   initAdmin();
+  initSubscribeForm();
   applySettingsToStorefront();
 
   // Refresh from Supabase once the initial (cached/seed) paint is done.
@@ -3117,6 +3244,18 @@ document.addEventListener("DOMContentLoaded", () => {
     renderDrop();
     renderShop();
     renderCategories();
+  });
+
+  loadSettingsFromSupabase().then((remote) => {
+    if (!remote) return; // offline or not set up yet — keep local cache/defaults
+    const adminPassword = SETTINGS.adminPassword; // password never lives in Supabase
+    SETTINGS = Object.assign({}, SETTINGS, remote, { adminPassword });
+    cacheSettings(SETTINGS);
+    WHATSAPP_NUMBER = SETTINGS.whatsapp || WHATSAPP_NUMBER;
+    applySettingsToStorefront();
+    if (document.getElementById("coPanel").classList.contains("open")) {
+      renderBankDetails();
+    }
   });
 });
 
