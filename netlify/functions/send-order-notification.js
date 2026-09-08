@@ -93,7 +93,7 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: JSON.stringify({ success: true, id: data.id }) };
   } catch (e) {
     console.error("Unexpected error sending order notification:", e);
-    return { statusCode: 500, body: JSON.stringify({ error: "Unexpected error." }) };
+    return { statusCode: 500, body: JSON.stringify({ error: "Unexpected error.", detail: e.message || String(e) }) };
   }
 };
 
