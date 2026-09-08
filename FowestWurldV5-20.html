@@ -2602,6 +2602,26 @@ function finalizeOrder(formValues, paymentMethod, paymentStatus, paystackRef) {
   closePanel("coOverlay", "coPanel");
   showOrderConfirmation(order);
   document.getElementById("checkoutForm").reset();
+
+  // Notify the store owner by email. Never blocks or fails the checkout —
+  // if this fails (no internet, function down, etc.) the order is still
+  // saved and the customer sees their confirmation as normal.
+  notifyOwnerOfNewOrder(order);
+}
+
+async function notifyOwnerOfNewOrder(order) {
+  try {
+    const res = await fetch("/.netlify/functions/send-order-notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order }),
+    });
+    if (!res.ok) {
+      console.error("Owner notification email failed with status", res.status);
+    }
+  } catch (e) {
+    console.error("Owner notification email failed:", e);
+  }
 }
 
 function setCheckoutSubmitting(isSubmitting, label) {
