@@ -2616,12 +2616,35 @@ async function notifyOwnerOfNewOrder(order) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ order }),
     });
+    const text = await res.text();
     if (!res.ok) {
-      console.error("Owner notification email failed with status", res.status);
+      console.error("Owner notification email failed with status", res.status, text);
+      showEmailDebug(`Owner email FAILED — HTTP ${res.status}\n${text}`);
+    } else {
+      showEmailDebug(`Owner email sent OK — ${text}`);
     }
   } catch (e) {
     console.error("Owner notification email failed:", e);
+    showEmailDebug(`Owner email FAILED — network/script error:\n${e.message || e}`);
   }
+}
+
+// TEMPORARY DEBUG HELPER — shows exactly what happened with the owner
+// notification email directly on the page, so this can be checked without
+// needing browser dev tools. Safe to remove once emails are confirmed working.
+function showEmailDebug(message) {
+  let box = document.getElementById("emailDebugBox");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "emailDebugBox";
+    box.style.cssText =
+      "position:fixed;bottom:12px;left:12px;right:12px;z-index:99999;background:#111;color:#0f0;" +
+      "font-family:monospace;font-size:11px;white-space:pre-wrap;padding:12px;border:1px solid #0f0;" +
+      "border-radius:6px;max-height:40vh;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,.6);";
+    document.body.appendChild(box);
+  }
+  const stamp = new Date().toLocaleTimeString();
+  box.textContent = `[${stamp}] ${message}`;
 }
 
 function setCheckoutSubmitting(isSubmitting, label) {
